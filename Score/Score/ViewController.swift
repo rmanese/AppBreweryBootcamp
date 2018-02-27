@@ -23,7 +23,8 @@ class ViewController: UIViewController {
     var warrior = Warrior()
     var thief = Thief()
     
-    var gameTimer = Timer()
+    var warriorTimer = Timer()
+    var thiefTimer = Timer()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,33 +43,39 @@ class ViewController: UIViewController {
         p2MaxHp.text = String(thief.maxHp)
     }
     
-    func warriorCombat() {
+    @objc func warriorCombat() {
         var tempHp = warrior.hp
         warrior.hp -= thief.attack()
         tempHp = tempHp - warrior.hp
-        print("Thief did \(tempHp)")
-        print("HP: \(warrior.hp) / \(warrior.maxHp)")
+        animateBar(current: warrior.hp, max: warrior.maxHp, bar: p1HealthBar)
+        battleInfo.text = "Thief did \(tempHp)"
+        p1MinHp.text = String(warrior.hp)
+        p1MaxHp.text = String(warrior.maxHp)
     }
     
-    func thiefCombat() {
+    @objc func thiefCombat() {
         var tempHp = thief.hp
-        thief.hp -= thief.attack()
+        thief.hp -= warrior.attack()
         tempHp = tempHp - thief.hp
-        print("Warrior did \(tempHp)")
-        print("HP: \(thief.hp) / \(thief.maxHp)")
+        animateBar(current: thief.hp, max: thief.maxHp, bar: p2HealthBar)
+        battleInfo.text = "Warrior did \(tempHp)"
+        p2MinHp.text = String(thief.hp)
+        p2MaxHp.text = String(thief.maxHp)
+    }
+    
+    func animateBar(current: Float, max: Float, bar: UIProgressView!) {
+        let newProgress: Float = current / max
+        print(newProgress)
+        bar.setProgress(newProgress, animated: true)
+    }
+    
+    func enterBattle() {
+        thiefTimer = Timer.scheduledTimer(timeInterval: 7, target: self, selector: #selector(thiefCombat), userInfo: nil, repeats: true)
+        warriorTimer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(warriorCombat), userInfo: nil, repeats: true)
     }
     
     @IBAction func fight() {
-        while warrior.hp > 0 && thief.hp > 0 {
-            thiefCombat()
-            warriorCombat()
-            if warrior.hp <= 0 {
-                print("Thief wins")
-            }
-            if thief.hp <= 0 {
-                print("Warrior wins")
-            }
-        }
+        enterBattle()
     }
     
     
