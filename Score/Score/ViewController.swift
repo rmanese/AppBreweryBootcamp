@@ -44,23 +44,33 @@ class ViewController: UIViewController {
     }
     
     @objc func warriorCombat() {
-        var tempHp = warrior.hp
-        warrior.hp -= thief.attack()
-        tempHp = tempHp - warrior.hp
-        animateBar(current: warrior.hp, max: warrior.maxHp, bar: p1HealthBar)
-        battleInfo.text = "Thief did \(tempHp)"
-        p1MinHp.text = String(warrior.hp)
-        p1MaxHp.text = String(warrior.maxHp)
-    }
-    
-    @objc func thiefCombat() {
         var tempHp = thief.hp
         thief.hp -= warrior.attack()
         tempHp = tempHp - thief.hp
         animateBar(current: thief.hp, max: thief.maxHp, bar: p2HealthBar)
-        battleInfo.text = "Warrior did \(tempHp)"
+        battleInfo.text = "Warrior did \(tempHp) damage"
         p2MinHp.text = String(thief.hp)
         p2MaxHp.text = String(thief.maxHp)
+        
+        if thief.hp < 1 {
+            warriorTimer.invalidate()
+            thiefTimer.invalidate()
+        }
+    }
+    
+    @objc func thiefCombat() {
+        var tempHp = warrior.hp
+        warrior.hp -= thief.attack()
+        tempHp = tempHp - warrior.hp
+        animateBar(current: warrior.hp, max: warrior.maxHp, bar: p1HealthBar)
+        battleInfo.text = "Thief did \(tempHp) damage"
+        p1MinHp.text = String(warrior.hp)
+        p1MaxHp.text = String(warrior.maxHp)
+        
+        if warrior.hp < 1 {
+            thiefTimer.invalidate()
+            warriorTimer.invalidate()
+        }
     }
     
     func animateBar(current: Float, max: Float, bar: UIProgressView!) {
@@ -69,9 +79,17 @@ class ViewController: UIViewController {
         bar.setProgress(newProgress, animated: true)
     }
     
+    func thiefAttack() {
+        thiefTimer = Timer.scheduledTimer(timeInterval: 3, target: self, selector: #selector(thiefCombat), userInfo: nil, repeats: true)
+    }
+    
+    func warriorAttack() {
+        warriorTimer = Timer.scheduledTimer(timeInterval: 7, target: self, selector: #selector(warriorCombat), userInfo: nil, repeats: true)
+    }
+    
     func enterBattle() {
-        thiefTimer = Timer.scheduledTimer(timeInterval: 7, target: self, selector: #selector(thiefCombat), userInfo: nil, repeats: true)
-        warriorTimer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(warriorCombat), userInfo: nil, repeats: true)
+        thiefAttack()
+        warriorAttack()
     }
     
     @IBAction func fight() {
